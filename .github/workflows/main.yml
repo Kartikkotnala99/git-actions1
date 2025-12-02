@@ -18,7 +18,7 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ap-south-1   # change if your region is different
+          aws-region: ap-south-1   # because CodeDeploy + EC2 + ASG are here
 
       - name: Create deployment bundle
         run: |
@@ -26,7 +26,7 @@ jobs:
 
       - name: Upload bundle to S3
         env:
-          S3_BUCKET: gitaction1535   # TODO: put your exact bucket name here
+          S3_BUCKET: portfolio-artifacts-ap-south-1   # <-- NEW bucket in ap-south-1
         run: |
           TIMESTAMP=$(date +%Y%m%d%H%M%S)
           S3_KEY="artifacts/website-$TIMESTAMP.zip"
@@ -35,11 +35,12 @@ jobs:
 
       - name: Trigger CodeDeploy deployment
         env:
-          S3_BUCKET: gitaction1535   # same bucket as above
+          S3_BUCKET: portfolio-artifacts-ap-south-1
         run: |
           aws deploy create-deployment \
             --application-name portfolio-app \
             --deployment-group-name portfolio-dg \
             --s3-location bucket=$S3_BUCKET,key=${{ env.S3_KEY }},bundleType=zip
+
 
 
